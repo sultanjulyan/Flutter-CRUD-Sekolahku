@@ -1,17 +1,16 @@
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
-import 'package:sekolahku/screens/form_register.dart';
-import 'package:sekolahku/screens/tab_screen.dart';
+import 'package:sekolahku/domain/user_domain.dart';
 import 'package:sekolahku/service/app_service.dart';
 
-class FormLogin extends StatefulWidget {
-  const FormLogin({Key key}) : super(key: key);
+class FormRegister extends StatefulWidget {
+  const FormRegister({Key key}) : super(key: key);
 
   @override
-  _FormLoginState createState() => _FormLoginState();
+  _FormRegisterState createState() => _FormRegisterState();
 }
 
-class _FormLoginState extends State<FormLogin> {
+class _FormRegisterState extends State<FormRegister> {
   TextEditingController usernameController = TextEditingController();
   TextEditingController passwordController = TextEditingController();
 
@@ -67,7 +66,7 @@ class _FormLoginState extends State<FormLogin> {
                 child: RaisedButton(
                   color: Colors.deepPurple,
                   onPressed: () {
-                    onLogin();
+                    onRegister();
                   },
                   child: Row(
                     mainAxisAlignment: MainAxisAlignment.center,
@@ -80,35 +79,13 @@ class _FormLoginState extends State<FormLogin> {
                         width: 10.0,
                       ),
                       Text(
-                        'LOGIN',
+                        'REGISTER',
                         style: TextStyle(color: Colors.white),
                       ),
                     ],
                   ),
                 ),
               ),
-              SizedBox(
-                height: 15.0,
-              ),
-              Row(
-                mainAxisAlignment: MainAxisAlignment.center,
-                children: [
-                  Text('Belum punya akun? '),
-                  GestureDetector(
-                    onTap: (){
-                      Navigator.push(
-                          context,
-                          MaterialPageRoute(
-                              builder: (BuildContext context) => FormRegister()));
-                    },
-                    child: Text('Daftar di sini!',
-                      style: TextStyle(
-                      color: Colors.deepPurple,
-                      fontWeight: FontWeight.bold,
-                    ),),
-                  )
-                ],
-              )
             ],
           ),
         ),
@@ -116,33 +93,27 @@ class _FormLoginState extends State<FormLogin> {
     );
   }
 
-  void onLogin() {
+  void onRegister() {
     if (usernameController.text.length > 0) {
       if (passwordController.text.length > 0) {
-        String email    = usernameController.text.toString();
-        String password = passwordController.text.toString();
+        UserDomain userDomain = UserDomain();
+        userDomain.email    = usernameController.text.toString();
+        userDomain.password = passwordController.text.toString();
 
-        AppServices.getUserService.getEmail(email).then((value){
-          if(value!=null){
-            AppServices.getUserService.getLogin(email, password).then((valueLogin){
-              if(valueLogin!=null){
-                Navigator.pushReplacement(
-                    context,
-                    MaterialPageRoute(
-                        builder: (BuildContext context) => TabScreen()));
-              }else{
-                ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text('Password salah')));
-              }
+        AppServices.getUserService.getEmail(usernameController.text.toString()).then((value){
+          if(value==null){
+            AppServices.getUserService.createUser(userDomain).then((valueCreate){
+              Navigator.pop(context);
             }).catchError((error){
               print(error);
-              ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text('Login gagal, periksa user anda dengan benar')));
+              ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text(error.toString())));
             });
           }else{
-            ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text('Akun tersebut belum terdaftar')));
+            ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text('Akun tersebut telah terdaftar')));
           }
         }).catchError((error){
-          print(error);
-          ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text('Login gagal, periksa user anda dengan benar')));
+          print('error reg'+error);
+          ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text('Register gagal, periksa user anda dengan benar')));
         });
       } else {
         ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text('Anda belum mengisi password')));

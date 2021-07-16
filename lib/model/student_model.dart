@@ -34,8 +34,19 @@ class StudentModel {
     
     ''';
 
+    String sqlRawUser = '''
+        
+    CREATE TABLE IF NOT EXISTS user(
+    id_user INTEGER PRIMARY KEY NOT NULL,
+    email TEXT(30),
+    password TEXT(8)
+    );
+    
+    ''';
+
     await db.execute(sqlRaw);
     await db.execute(sqlRawTeacher);
+    await db.execute(sqlRawUser);
   }
 
   FutureOr<void> onConfigure(Database db) {
